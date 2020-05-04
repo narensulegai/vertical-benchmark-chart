@@ -12,9 +12,8 @@
       
       .line {
           position: relative;
-          width: 100%;
-          box-shadow: 0 1px 0 0 black;
           height: 100px;
+          flex: 1
       }
       
       .box {
@@ -30,7 +29,19 @@
           position: absolute;
           top: 50%;
       }
-      
+      .label-container{
+          display: flex;
+          align-items: center;
+          box-shadow: 0 1px 0 0 black;
+      }
+      .label{
+          text-align: center;
+          flex: 1;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+
+      }
       .circle-tr, .circle-tl, .circle-bl, .circle-br {
           height: calc(var(--circle-radius) * 2);
           width: calc(var(--circle-radius) * 2);
@@ -129,14 +140,22 @@
 
       newSeries.forEach(s => {
         const line = document.createElement('div');
+        const label = document.createElement('div');
+        const labelContainer = document.createElement('div');
+        label.className = 'label';
+        label.textContent = "Labde sdes sfd";
         line.className = 'line';
+        labelContainer.className = 'label-container';
+
         s.forEach((l, i) => {
           if (l.from !== null && l.to) {
             const box = this.createConnectingLine(l.from, l.to, series[i].color);
             line.appendChild(box);
           }
         });
-        shadowDom.appendChild(line);
+        labelContainer.appendChild(label);
+        labelContainer.appendChild(line);
+        shadowDom.appendChild(labelContainer);
       });
 
     }
