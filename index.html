@@ -13,8 +13,12 @@
 
 <div class="benchmarkContainer">
     <vertical-benchmark-chart
-            series='[{"series":[{"from":0.1, "to":0.5}, {"from":0.5, "to":0.1}, {"from":0.1, "to":0.2}], "color":"blue"},
-            {"series":[{"from":0.1, "to":0.4}, {"from":0.4, "to":0.5}, {"from":0.5, "to":0.3}], "color":"green"}]'>
+        data='{
+            "series":[
+                {"values":[0.1, null, 0.3], "color":"blue"},
+                {"values":[0.2, 0.3, 0.4], "color":"green"}
+            ],
+            "labels" : ["text1", "text2", "text3"]}'>
     </vertical-benchmark-chart>
 </div>
 

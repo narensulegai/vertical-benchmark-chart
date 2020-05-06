@@ -6,6 +6,7 @@
           --width: 2px;
           --circle-radius: 5px;
       }
+      
       * {
           box-sizing: border-box;
       }
@@ -82,7 +83,6 @@
   `;
 
   class VerticalBenchmarkChart extends HTMLElement {
-
     constructor() {
       super();
     }
@@ -125,39 +125,52 @@
       const shadowDom = this.attachShadow({mode: "open"});
       shadowDom.appendChild(templateHtml);
 
-      const series = JSON.parse(this.getAttribute('series'));
+      const data = JSON.parse(this.getAttribute('data'));
 
-      const newSeries = series.reduce((m, s) => {
-        s.series.forEach((e, i) => {
+      const newSeries = data.series.reduce((m, s) => {
+
+        for (let i = 0; i < s.values.length - 1; i++) {
+          const l = {from: null, to: null};
+          l.from = s.values[i];
+          l.to = s.values[i + 1];
           if (m[i] === undefined) {
-            m[i] = [e]
+            m[i] = [l]
           } else {
-            m[i].push(e)
+            m[i].push(l)
           }
-        });
+        }
         return m;
       }, []);
 
-      newSeries.forEach(s => {
+      console.log(newSeries);
+
+      const createLabelContainer = (labelText) => {
+        const labelContainer = document.createElement('div');
         const line = document.createElement('div');
         const label = document.createElement('div');
-        const labelContainer = document.createElement('div');
+        label.textContent = labelText;
         label.className = 'label';
-        label.textContent = "Labde sdes sfd";
         line.className = 'line';
         labelContainer.className = 'label-container';
+        labelContainer.appendChild(label);
+        labelContainer.appendChild(line);
+        return {labelContainer, line, label};
+      };
 
+      newSeries.forEach((s, j) => {
+        const {labelContainer, line} = createLabelContainer(data.labels[j]);
         s.forEach((l, i) => {
-          if (l.from !== null && l.to) {
-            const box = this.createConnectingLine(l.from, l.to, series[i].color);
+          if (l.from !== null && l.to !== null) {
+            const box = this.createConnectingLine(l.from, l.to, data.series[i].color);
             line.appendChild(box);
           }
         });
-        labelContainer.appendChild(label);
-        labelContainer.appendChild(line);
         shadowDom.appendChild(labelContainer);
       });
 
+      const {labelContainer, line} = createLabelContainer(data.labels[data.labels.length - 1]);
+
+      shadowDom.appendChild(labelContainer);
     }
   }
 
