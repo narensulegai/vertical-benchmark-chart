@@ -13,8 +13,9 @@
       
       .line {
           position: relative;
-          height: 100px;
-          flex: 1
+          height: 100%;
+          flex: 50%;
+          box-shadow: -1px 0 0 0 black;
       }
       
       .box {
@@ -30,18 +31,36 @@
           position: absolute;
           top: 50%;
       }
-      .label-container{
-          display: flex;
-          align-items: center;
+      .label-x-container {
+          position: relative;
+          width: 50%;
+          margin-left: 50%;
           box-shadow: 0 1px 0 0 black;
+          height: 20px;
       }
-      .label{
-          text-align: center;
-          flex: 1;
+      .label-x {
+          position: absolute;
+          width: 100px;
+          margin-left: -50px;
+          left: 0;
           white-space: nowrap;
           text-overflow: ellipsis;
           overflow: hidden;
-
+          text-align: center;
+      }
+      .label-container {
+          display: flex;
+          align-items: center;
+          box-shadow: 0 1px 0 0 black;
+          height: 50px;
+      }
+      .label-container:last-child {
+          box-shadow: none;
+      }
+      .label {
+          flex: 50%;
+    
+          padding-left: 20px;
       }
       .circle-tr, .circle-tl, .circle-bl, .circle-br {
           height: calc(var(--circle-radius) * 2);
@@ -49,7 +68,7 @@
           border-radius: var(--circle-radius);
           background: gray;
           position: absolute;
-          box-shadow: 2px 2px 3px -1px black;
+          box-shadow: 2px 2px 6px -2px black;
       }
       
       .circle-tr {
@@ -87,6 +106,19 @@
       super();
     }
 
+    createLabelX(labels) {
+      const container = document.createElement('div');
+      container.className = 'label-x-container';
+      labels.forEach((label, i) => {
+        const l = document.createElement('div');
+        l.className = 'label-x';
+        l.style.left = (i) / (labels.length - 1) * 100 + '%';
+        l.textContent = label;
+        container.appendChild(l);
+      });
+      return container;
+    }
+
     createConnectingLine(from, to, color) {
       const box = document.createElement('div');
       const diagonal = document.createElement('div');
@@ -96,21 +128,32 @@
       diagonal.style.backgroundColor = color;
       circleTop.style.backgroundColor = color;
       circleBottom.style.backgroundColor = color;
-
       box.className = "box";
 
-      if (to >= from) {
+      if (from === null && to === null) {
+        //  nothing to do
+      } else if (from === null || to === null) {
+        if (from === null) {
+          box.style.left = to * 100 + '%';
+          circleBottom.className = 'circle-bl';
+        }
+        if (to === null) {
+          box.style.left = from * 100 + '%';
+          circleTop.className = 'circle-tl';
+        }
+      } else if (to >= from) {
         diagonal.className = 'diagonal-ltr';
         circleTop.className = 'circle-tl';
         circleBottom.className = 'circle-br';
         box.style.left = from * 100 + '%';
+        box.style.width = Math.abs(from - to) * 100 + '%';
       } else {
         diagonal.className = 'diagonal-rtl';
         circleTop.className = 'circle-tr';
         circleBottom.className = 'circle-bl';
         box.style.left = to * 100 + '%';
+        box.style.width = Math.abs(from - to) * 100 + '%';
       }
-      box.style.width = Math.abs(from - to) * 100 + '%';
 
       box.appendChild(diagonal);
       box.appendChild(circleTop);
@@ -129,10 +172,10 @@
 
       const newSeries = data.series.reduce((m, s) => {
 
-        for (let i = 0; i < s.values.length - 1; i++) {
+        for (let i = 0; i < s.values.length; i++) {
           const l = {from: null, to: null};
           l.from = s.values[i];
-          l.to = s.values[i + 1];
+          l.to = s.values[i + 1] === undefined ? null : s.values[i + 1];
           if (m[i] === undefined) {
             m[i] = [l]
           } else {
@@ -142,7 +185,8 @@
         return m;
       }, []);
 
-      console.log(newSeries);
+      const labelsX = this.createLabelX(data.labelsX);
+      shadowDom.appendChild(labelsX);
 
       const createLabelContainer = (labelText) => {
         const labelContainer = document.createElement('div');
@@ -158,19 +202,13 @@
       };
 
       newSeries.forEach((s, j) => {
-        const {labelContainer, line} = createLabelContainer(data.labels[j]);
+        const {labelContainer, line} = createLabelContainer(data.labelsY[j]);
         s.forEach((l, i) => {
-          if (l.from !== null && l.to !== null) {
-            const box = this.createConnectingLine(l.from, l.to, data.series[i].color);
-            line.appendChild(box);
-          }
+          const box = this.createConnectingLine(l.from, l.to, data.series[i].color);
+          line.appendChild(box);
         });
         shadowDom.appendChild(labelContainer);
       });
-
-      const {labelContainer, line} = createLabelContainer(data.labels[data.labels.length - 1]);
-
-      shadowDom.appendChild(labelContainer);
     }
   }
 
