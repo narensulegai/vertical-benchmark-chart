@@ -105,6 +105,19 @@
       super();
     }
 
+    createLabelContainer(labelText) {
+      const labelContainer = document.createElement('div');
+      const line = document.createElement('div');
+      const label = document.createElement('div');
+      label.textContent = labelText;
+      label.className = 'label';
+      line.className = 'line';
+      labelContainer.className = 'label-container';
+      labelContainer.appendChild(label);
+      labelContainer.appendChild(line);
+      return {labelContainer, line, label};
+    };
+
     createLabelX(labels) {
       const container = document.createElement('div');
       container.className = 'label-x-container';
@@ -162,46 +175,32 @@
     }
 
     connectedCallback() {
+      const data = JSON.parse(this.getAttribute('data'));
+
       const templateHtml = template.content.cloneNode(true);
 
       const shadowDom = this.attachShadow({mode: "open"});
       shadowDom.appendChild(templateHtml);
 
-      const data = JSON.parse(this.getAttribute('data'));
+      const labelsX = this.createLabelX(data.labelsX);
+      shadowDom.appendChild(labelsX);
 
-      const newSeries = data.series.reduce((m, s) => {
-
+      const seriesWithFromTo = data.series.reduce((m, s) => {
         for (let i = 0; i < s.values.length; i++) {
           const l = {from: null, to: null};
           l.from = s.values[i];
           l.to = s.values[i + 1] === undefined ? null : s.values[i + 1];
           if (m[i] === undefined) {
-            m[i] = [l]
+            m[i] = [l];
           } else {
-            m[i].push(l)
+            m[i].push(l);
           }
         }
         return m;
       }, []);
 
-      const labelsX = this.createLabelX(data.labelsX);
-      shadowDom.appendChild(labelsX);
-
-      const createLabelContainer = (labelText) => {
-        const labelContainer = document.createElement('div');
-        const line = document.createElement('div');
-        const label = document.createElement('div');
-        label.textContent = labelText;
-        label.className = 'label';
-        line.className = 'line';
-        labelContainer.className = 'label-container';
-        labelContainer.appendChild(label);
-        labelContainer.appendChild(line);
-        return {labelContainer, line, label};
-      };
-
-      newSeries.forEach((s, j) => {
-        const {labelContainer, line} = createLabelContainer(data.labelsY[j]);
+      seriesWithFromTo.forEach((s, j) => {
+        const {labelContainer, line} = this.createLabelContainer(data.labelsY[j]);
         s.forEach((l, i) => {
           const box = this.createConnectingLine(l.from, l.to, data.series[i].color);
           line.appendChild(box);

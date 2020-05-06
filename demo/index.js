@@ -35,7 +35,6 @@
           position: relative;
           width: 50%;
           margin-left: 50%;
-          box-shadow: 0 1px 0 0 black;
           height: 20px;
       }
       .label-x {
@@ -51,7 +50,7 @@
       .label-container {
           display: flex;
           align-items: center;
-          box-shadow: 0 1px 0 0 #c1c0c0;
+          box-shadow: 5px 4px 11px -6px #c1c0c0;
           height: 50px;
       }
       .label-container:last-child {
@@ -105,6 +104,19 @@
     constructor() {
       super();
     }
+
+    createLabelContainer(labelText) {
+      const labelContainer = document.createElement('div');
+      const line = document.createElement('div');
+      const label = document.createElement('div');
+      label.textContent = labelText;
+      label.className = 'label';
+      line.className = 'line';
+      labelContainer.className = 'label-container';
+      labelContainer.appendChild(label);
+      labelContainer.appendChild(line);
+      return {labelContainer, line, label};
+    };
 
     createLabelX(labels) {
       const container = document.createElement('div');
@@ -163,46 +175,32 @@
     }
 
     connectedCallback() {
+      const data = JSON.parse(this.getAttribute('data'));
+
       const templateHtml = template.content.cloneNode(true);
 
       const shadowDom = this.attachShadow({mode: "open"});
       shadowDom.appendChild(templateHtml);
 
-      const data = JSON.parse(this.getAttribute('data'));
+      const labelsX = this.createLabelX(data.labelsX);
+      shadowDom.appendChild(labelsX);
 
-      const newSeries = data.series.reduce((m, s) => {
-
+      const seriesWithFromTo = data.series.reduce((m, s) => {
         for (let i = 0; i < s.values.length; i++) {
           const l = {from: null, to: null};
           l.from = s.values[i];
           l.to = s.values[i + 1] === undefined ? null : s.values[i + 1];
           if (m[i] === undefined) {
-            m[i] = [l]
+            m[i] = [l];
           } else {
-            m[i].push(l)
+            m[i].push(l);
           }
         }
         return m;
       }, []);
 
-      const labelsX = this.createLabelX(data.labelsX);
-      shadowDom.appendChild(labelsX);
-
-      const createLabelContainer = (labelText) => {
-        const labelContainer = document.createElement('div');
-        const line = document.createElement('div');
-        const label = document.createElement('div');
-        label.textContent = labelText;
-        label.className = 'label';
-        line.className = 'line';
-        labelContainer.className = 'label-container';
-        labelContainer.appendChild(label);
-        labelContainer.appendChild(line);
-        return {labelContainer, line, label};
-      };
-
-      newSeries.forEach((s, j) => {
-        const {labelContainer, line} = createLabelContainer(data.labelsY[j]);
+      seriesWithFromTo.forEach((s, j) => {
+        const {labelContainer, line} = this.createLabelContainer(data.labelsY[j]);
         s.forEach((l, i) => {
           const box = this.createConnectingLine(l.from, l.to, data.series[i].color);
           line.appendChild(box);
