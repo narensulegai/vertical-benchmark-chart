@@ -35,7 +35,6 @@
           position: relative;
           width: 50%;
           margin-left: 50%;
-          box-shadow: 5px 4px 11px -6px #c1c0c0;
           height: 20px;
       }
       .label-x {
@@ -51,7 +50,7 @@
       .label-container {
           display: flex;
           align-items: center;
-          box-shadow: 0 1px 0 0 #c1c0c0;
+          box-shadow: 5px 4px 11px -6px #c1c0c0;
           height: 50px;
       }
       .label-container:last-child {
