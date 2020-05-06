@@ -51,7 +51,7 @@
       .label-container {
           display: flex;
           align-items: center;
-          box-shadow: 0 1px 0 0 black;
+          box-shadow: 0 1px 0 0 #c1c0c0;
           height: 50px;
       }
       .label-container:last-child {
